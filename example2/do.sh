@@ -5,6 +5,9 @@ sudo chmod 777 /provisioning
 cd /provisioning
 
 date >> provisioning
+echo "PWD : " >> provisioning
+echo $PWD  >> provisioning
+
 echo "Arg1 : " >> provisioning
 echo $1  >> provisioning
 
