@@ -15,7 +15,7 @@
       "value": "hackfestexample2dns"
     },
     "mySqlPassword": {
-      "value": "password"
+      "value": "mysqlpassword"
     },
     "destLocation": {
       "value": "West Europe"
