@@ -457,5 +457,57 @@
         }
       }
     }
+
+  ,
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()))]-ext",
+      "copy": {
+        "name": "virtualMachineExtFrontLoop",
+        "count": "[variables('numberOfFront')]"
+      },
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmFrontNamePrefix'), add(1, copyindex()))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.2",
+        "settings": {
+          "fileUris": [
+            "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example6/do.sh"
+          ],
+          "commandToExecute": "[concat('bash do.sh front', add(1, copyindex()), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
+        }
+      }
+    }
+
+   ,
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()))]-ext",
+      "copy": {
+        "name": "virtualMachineExtNodeLoop",
+        "count": "[variables('numberOfNode')]"
+      },
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmNodeNamePrefix'), add(1, copyindex()))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.2",
+        "settings": {
+          "fileUris": [
+            "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example6/do.sh"
+          ],
+          "commandToExecute": "[concat('bash do.sh node', add(1, copyindex()), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
+        }
+      }
+    }
   ]
 }
