@@ -29,6 +29,9 @@ echo $3  >> provisioning
 #steps :
 
 #Always
+DEBIAN_FRONTEND=noninteractive
+export DEBIAN_FRONTEND=noninteractive
+
 sudo apt-get update && sudo apt-get dist-upgrade -y
 sudo apt-get install -y apache2 htop
 

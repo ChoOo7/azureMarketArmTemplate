@@ -8,6 +8,13 @@
         "description": "Unique application name."
       }
     },
+
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password"
+      }
+    },
     "vmSize": {
       "type": "string",
       "defaultValue": "Standard_D2",
@@ -53,7 +60,6 @@
 
 
     "adminUsername": "brainsonicadmin",
-    "adminPassword": "secrEtpassword!",
     "storageAccountNameVhd": "[concat(parameters('appName'), 'bsvhd')]",
     "storageAccountName": "[concat(parameters('appName'), 'bs')]",
 
@@ -238,7 +244,7 @@
                 "id": "[variables('frontEndIPConfigID')]"
               },
               "backendAddressPool": {
-                "id": "[concat(variables('lbID'),'/backendAddressPools/', variables('LoadBalancerBackendFront'))]"
+                "id": "[concat(variables('lbID'),'/backendAddressPools/LoadBalancerBackendFront')]"
               },
               "probe": {
                 "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('lbName')), '/probes/ApacheHTTPProbe')]"
@@ -256,7 +262,7 @@
                 "id": "[variables('frontEndIPConfigID')]"
               },
               "backendAddressPool": {
-                "id": "[concat(variables('lbID'),'/backendAddressPools/', variables('LoadBalancerBackendFront'))]"
+                "id": "[concat(variables('lbID'),'/backendAddressPools/LoadBalancerBackendFront')]"
               },
               "probe": {
                 "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('lbName')), '/probes/ApacheHTTPProbe')]"
@@ -564,7 +570,7 @@
         "osProfile": {
           "computername": "[concat(variables('vmFrontNamePrefix'), add(1, copyIndex()))]",
           "adminUsername": "[variables('adminUsername')]",
-          "adminPassword": "[variables('adminPassword')]"
+          "adminPassword": "[parameters('adminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
@@ -615,7 +621,7 @@
         "osProfile": {
           "computername": "[concat(variables('vmNodeNamePrefix'), add(1, copyIndex()))]",
           "adminUsername": "[variables('adminUsername')]",
-          "adminPassword": "[variables('adminPassword')]"
+          "adminPassword": "[parameters('adminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
