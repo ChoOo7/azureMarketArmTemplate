@@ -1,14 +1,15 @@
 #!/bin/bash
 
-date >> /tmp/date
-date >> /root/date
+sudo mkdir -p /provisioning
+sudo chmod 777 /provisioning
+cd /provisioning
 
-date >> /root/provisioning
-echo "Arg1 : " >> /root/provisioning
-echo $1  >> /root/provisioning
+date >> provisioning
+echo "Arg1 : " >> provisioning
+echo $1  >> provisioning
 
-echo "Arg2 : " >> /root/provisioning
-echo $2  >> /root/provisioning
+echo "Arg2 : " >> provisioning
+echo $2  >> provisioning
 
-echo "Arg2 : " >> /root/provisioning
-echo $2  >> /root/provisioning
+echo "Arg2 : " >> provisioning
+echo $2  >> provisioning
