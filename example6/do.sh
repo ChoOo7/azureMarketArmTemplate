@@ -30,6 +30,13 @@ echo $3  >> provisioning
 
 #Always
 apt-get update && apt-get dist-upgrade -y
+apt-get install apache2
+
+if [[ "$1" == node* ]] 
+then
+  echo "IS NODE"  >> provisioning
+
+fi
 
 #If salt-minion-id != hostname
   #Configure salt-minion
