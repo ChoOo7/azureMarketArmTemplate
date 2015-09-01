@@ -1,5 +1,7 @@
 #!/bin/bash
 
+date >> /tmp/date
+
 sudo mkdir -p /provisioning
 sudo chmod 777 /provisioning
 cd /provisioning
