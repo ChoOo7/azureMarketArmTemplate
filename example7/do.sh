@@ -35,8 +35,9 @@ echo "" > /tmp/do.sh
 echo DEBIAN_FRONTEND=noninteractive >> /tmp/do.sh
 echo export DEBIAN_FRONTEND=noninteractive >> /tmp/do.sh
 echo ENV DEBIAN_FRONTEND noninteractive >> /tmp/do.sh
-echo "apt-get update && sudo apt-get dist-upgrade -y" >> /tmp/do.sh
-echo "apt-get install -y apache2 htop" >> /tmp/do.sh
+echo "apt-get update" >> /tmp/do.sh
+echo "apt-get install -y apache2 htop nano" >> /tmp/do.sh
+echo "sudo apt-get dist-upgrade -y" >> /tmp/do.sh
 
 
 
