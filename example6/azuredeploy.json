@@ -153,7 +153,8 @@
           {
             "name": "ipconfig1",
             "properties": {
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat('10.0.0.', add(4, copyindex()))]",
               "subnet": {
                 "id": "[variables('subnetRef')]"
               },
@@ -191,7 +192,8 @@
           {
             "name": "ipconfig1",
             "properties": {
-              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat('10.0.0.', add(100, copyindex()))]",
               "subnet": {
                 "id": "[variables('subnetRef')]"
               },
@@ -229,6 +231,55 @@
             "name": "LoadBalancerBackendFront"
           }
         ],
+        "loadBalancingRules": [
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('lbID'),'/backendAddressPools/', variables('LoadBalancerBackendFront'))]"
+              },
+              "probe": {
+                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('lbName')), '/probes/ApacheHTTPProbe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "idleTimeoutInMinutes": 5
+            },
+            "Name": "ApacheHTTP"
+          },
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('lbID'),'/backendAddressPools/', variables('LoadBalancerBackendFront'))]"
+              },
+              "probe": {
+                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('lbName')), '/probes/ApacheHTTPProbe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "idleTimeoutInMinutes": 5
+            },
+            "Name": "ApacheHTTPS"
+          }
+        ],
+        "probes": [
+          {
+            "properties": {
+              "protocol": "Tcp",
+              "port": 80,
+              "intervalInSeconds": 10,
+              "numberOfProbes": 2
+            },
+            "name": "ApacheHTTPProbe"
+          }
+        ],
         "inboundNatRules": [
           {
             "name": "SSH-VM-front1",
@@ -250,6 +301,42 @@
               },
               "protocol": "tcp",
               "frontendPort": 11123,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-front3",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11124,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-front4",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11125,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-front5",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11126,
               "backendPort": 22,
               "enableFloatingIP": false
             }
@@ -289,11 +376,107 @@
               "backendPort": 22,
               "enableFloatingIP": false
             }
+          },
+          {
+            "name": "SSH-VM-node4",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11133,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-node5",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11134,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-node6",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11135,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+
+          {
+            "name": "HTTPS-admin-front1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11443,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "HTTPS-admin-front2",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11444,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "HTTPS-admin-front3",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11445,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "HTTPS-admin-front4",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11446,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "HTTPS-admin-front5",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11447,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
           }
         ]
       }
     },
-
 
 
     {
@@ -308,6 +491,8 @@
         "frontendIPConfigurations": [
           {
             "name": "InternalLoadBalancerFront",
+            "privateIPAllocationMethod": "Static",
+            "privateIPAddress": "10.0.0.200",
             "properties": {
               "subnet": {
                 "id": "[variables('subnetRef')]"
@@ -461,7 +646,7 @@
   ,
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()), '-ext', '/script')]",
+      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()), '/extscript')]",
       "copy": {
         "name": "virtualMachineExtFrontLoop",
         "count": "[variables('numberOfFront')]"
@@ -486,7 +671,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()), '-ext', '/script')]",
+      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()), '/extscript')]",
       "copy": {
         "name": "virtualMachineExtNodeLoop",
         "count": "[variables('numberOfNode')]"

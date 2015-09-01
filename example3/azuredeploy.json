@@ -189,8 +189,8 @@
           {
             "name": "ipconfig2",
             "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.0.0.5",
               "subnet": {
                 "id": "[variables('subnetRef')]"
               }
