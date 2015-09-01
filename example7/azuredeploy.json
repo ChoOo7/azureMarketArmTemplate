@@ -695,7 +695,7 @@
           "fileUris": [
             "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example7/do.sh"
           ],
-          "commandToExecute": "[concat('bash do.sh node', add(1, copyindex()), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
+          "commandToExecute": "[concat('sh do.sh node', add(1, copyindex()), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
         }
       }
 
