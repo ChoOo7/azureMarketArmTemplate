@@ -30,8 +30,19 @@
     "imageOffer": "UbuntuServer",
     "OSDiskNameFront1": "osdiskforlinuxfront1",
     "OSDiskNameFront2": "osdiskforlinuxfront2",
+    
+    
+    "OSDiskNameNode1": "osdiskforlinuxnode1",
+    "OSDiskNameNode2": "osdiskforlinuxnode2",
+    "OSDiskNameNode3": "osdiskforlinuxnode3",
+    
     "nicNameFront1": "myVMFront1Nic",
     "nicNameFront2": "myVMFront2Nic",
+    
+    "nicNameNode1": "myVMNode1Nic",
+    "nicNameNode2": "myVMNode2Nic",
+    "nicNameNode3": "myVMNode3Nic",
+    
     "addressPrefix": "10.0.0.0/16",
     "subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
@@ -51,8 +62,16 @@
     "vmNameFront1": "[concat(parameters('appName'),'-front1')]",
     "vmNameFront2": "[concat(parameters('appName'),'-front2')]",
     
+    "vmNameNode1": "[concat(parameters('appName'),'-node1')]",
+    "vmNameNode2": "[concat(parameters('appName'),'-node2')]",
+    "vmNameNode3": "[concat(parameters('appName'),'-node3')]",
+    
     "vmDiskUriFront1": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameFront1'),'.vhd')]",
     "vmDiskUriFront2": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameFront2'),'.vhd')]",
+    
+    "vmDiskUriNode1": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameNode1'),'.vhd')]",
+    "vmDiskUriNode2": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameNode2'),'.vhd')]",
+    "vmDiskUriNode3": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameNode3'),'.vhd')]",
     
     "virtualNetworkName": "MyVNET",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
@@ -65,9 +84,11 @@
     "LbIPConfigName": "LBFrontEnd",
     "LbIPConfigID": "[concat(variables('LbID'),'/frontendIPConfigurations/', variables('LbIPConfigName'))]",
     "LbBackendPoolName": "swarm-pool",
+
+    "frontEndIPConfigID": "[concat(variables('LbID'),'/frontendIPConfigurations/loadBalancerFrontend')]",
     
     "availabilitySetFront": "avaibilitySetFront",
-    "availabilitySetSql": "avaibilitySetSql"
+    "availabilitySetNode": "avaibilitySetNode"
     
   },
   "resources": [
@@ -190,10 +211,16 @@
         ]
       }
     },
-    
     {
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[variables('availabilitySetFront')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[parameters('destLocation')]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetNode')]",
       "apiVersion": "2015-05-01-preview",
       "location": "[parameters('destLocation')]",
       "properties": {}
@@ -206,14 +233,12 @@
       "name": "[variables('loadBalancerName')]",
       "location": "[parameters('destLocation')]",
       "dependsOn": [
-        "[variables('vnetID')]",
         "[concat('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]"
       ],
       "properties": {
         "frontendIpConfigurations": [
           {
             "properties": {
-              
               "publicIPAddress": {
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
               }
@@ -301,7 +326,7 @@
                 "id": "[variables('LbIPConfigID')]"
               },
               "protocol": "tcp",
-              "frontendPort": 11121,
+              "frontendPort": 11122,
               "backendPort": 22,
               "enableFloatingIP": false
             }
@@ -313,7 +338,7 @@
                 "id": "[variables('LbIPConfigID')]"
               },
               "protocol": "tcp",
-              "frontendPort": 11122,
+              "frontendPort": 11123,
               "backendPort": 22,
               "enableFloatingIP": false
             }
@@ -329,7 +354,8 @@
       "location": "[parameters('destLocation')]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountNameVhd'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNameFront1'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNameFront1'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetFront'))]"
       ],
       "properties": {
         "availabilitySet": {
@@ -384,7 +410,7 @@
           "fileUris": [
             "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example3/do.sh"
           ],
-          "commandToExecute": "[concat('bash do.sh front1', parameters('appName'), ' ')]"
+          "commandToExecute": "[concat('bash do.sh front1', parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountName')), '2015-05-01-preview').key1)]"
         }
       }
     }
@@ -395,11 +421,12 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmNameFront2')]",
+      "name": "[concat(variables('vmNameFront1'),'/newuserscript',variables('vmNameFront1'))]",
       "location": "[parameters('destLocation')]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountNameVhd'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNameFront2'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNameFront2'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetFront'))]"
       ],
       "properties": {
         "availabilitySet": {
@@ -454,7 +481,7 @@
           "fileUris": [
             "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example3/do.sh"
           ],
-          "commandToExecute": "[concat('bash do.sh front2', parameters('appName'))]"
+          "commandToExecute": "[concat('bash do.sh front2', parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountName')), '2015-05-01-preview').key1)]"
         }
       }
     }

@@ -26,4 +26,34 @@ echo "Arg3 : " >> provisioning
 echo $3  >> provisioning
 
 
-#"commandToExecute": "[concat('bash azure-imghlpr.sh ', variables('storageAccountName'),' ',listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1,' ', variables('srcImage') )]"
+#steps :
+
+#Always
+apt-get update && apt-get dist-upgrade -y
+
+#If salt-minion-id != hostname
+  #Configure salt-minion
+  #Restart salt-minion
+  #Ask (WS-1) for host installation
+
+
+#if no username cvc
+  #call local script to create user / vhost
+  #if front1
+    #call remote WS-2 in order to create DNS / PAD
+
+
+
+
+#Remote WS-1 :
+  #salt-master accept key && highstate
+  #if all highstate finished then
+    #terminate cluster installation
+
+#Remote WS-2 :
+  #Create PAD
+  #Create DNS
+  #waitUnitil PAD DNS OK then
+    #Update DNS
+
+

@@ -1,2 +1,8 @@
 Why deploy.sh is not called / retrieved everytimes ?
 
+
+Custom resolv.conf is deprecated, why ?
+https://github.com/naneau/php-obfuscator
+
+
+Can we store OUR password in mysql on client cluste r?
