@@ -29,10 +29,10 @@ echo $3  >> provisioning
 #steps :
 
 #Always
-apt-get update && apt-get dist-upgrade -y
-apt-get install apache2
+sudo apt-get update && sudo apt-get dist-upgrade -y
+sudo apt-get install apache2
 
-if [[ "$1" == node* ]] 
+if [[ "$1" == node* ]]
 then
   echo "IS NODE"  >> provisioning
 

@@ -48,7 +48,7 @@
     "internallbID": "[resourceId('Microsoft.Network/loadBalancers',variables('internallbName'))]",
     
     "frontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerFront')]",
-    "vmNamePrefix": "[concat(parameters('appName'), '-front')]",
+    "vmFrontNamePrefix": "[concat(parameters('appName'), '-front')]",
     "vmNodeNamePrefix": "[concat(parameters('appName'), '-node')]",
 
 
@@ -358,7 +358,7 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('vmNamePrefix'), add(1, copyindex()))]",
+      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()))]",
       "copy": {
         "name": "virtualMachineLoop",
         "count": "[variables('numberOfFront')]"
@@ -377,7 +377,7 @@
           "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
-          "computername": "[concat(variables('vmNamePrefix'), add(1, copyIndex()))]",
+          "computername": "[concat(variables('vmFrontNamePrefix'), add(1, copyIndex()))]",
           "adminUsername": "[variables('adminUsername')]",
           "adminPassword": "[variables('adminPassword')]"
         },
@@ -461,7 +461,7 @@
   ,
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()))]-ext",
+      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()), '-ext', '/script')]",
       "copy": {
         "name": "virtualMachineExtFrontLoop",
         "count": "[variables('numberOfFront')]"
@@ -482,12 +482,11 @@
           "commandToExecute": "[concat('bash do.sh front', add(1, copyindex()), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
         }
       }
-    }
 
-   ,
+    },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()))]-ext",
+      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()), '-ext', '/script')]",
       "copy": {
         "name": "virtualMachineExtNodeLoop",
         "count": "[variables('numberOfNode')]"
@@ -508,6 +507,8 @@
           "commandToExecute": "[concat('bash do.sh node', add(1, copyindex()), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
         }
       }
+
     }
+
   ]
 }
