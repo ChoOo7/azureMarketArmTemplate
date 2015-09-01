@@ -3,10 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "appName": {
-      "value": "hackfestexample36"
-    },
-    "destLocation": {
-      "value": "West Europe"
+      "value": "hackfestexample62"
     }
   }
 }

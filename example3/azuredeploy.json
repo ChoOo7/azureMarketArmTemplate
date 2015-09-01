@@ -46,7 +46,7 @@
     "addressPrefix": "10.0.0.0/16",
     "subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
-    "publicIPAddressName": "PublicIP",
+    "publicIPAddressName": "[concat('publicip',parameters('appName'))]",
     "publicIPAddressType": "Dynamic",
     "vmStorageAccountContainerName": "vhds",
     
@@ -73,22 +73,20 @@
     "vmDiskUriNode2": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameNode2'),'.vhd')]",
     "vmDiskUriNode3": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameNode3'),'.vhd')]",
     
-    "virtualNetworkName": "MyVNET",
+    "virtualNetworkName": "[concat('MyVNET', parameters('appName'))]",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
     "dnsNameForPublicIP": "[concat(parameters('appName'),'-brainsonic')]",
     
-    "loadBalancerName": "[concat(parameters('appName'),'-brainsonic-lb')]",
+    "loadBalancerName": "[concat(parameters('appName'),'-lb')]",
     "LbName": "[variables('loadBalancerName')]",
     "LbID": "[resourceId('Microsoft.Network/loadBalancers',variables('LbName'))]",
-    "LbIPConfigName": "LBFrontEnd",
+    "LbIPConfigName": "[concat(parameters('appName'),'LBFrontEnd')]",
     "LbIPConfigID": "[concat(variables('LbID'),'/frontendIPConfigurations/', variables('LbIPConfigName'))]",
-    "LbBackendPoolName": "swarm-pool",
+    "LbBackendPoolName": "[concat(parameters('appName'),'pool')]",
 
-    "frontEndIPConfigID": "[concat(variables('LbID'),'/frontendIPConfigurations/loadBalancerFrontend')]",
-    
-    "availabilitySetFront": "avaibilitySetFront",
-    "availabilitySetNode": "avaibilitySetNode"
+    "availabilitySetFront": "[concat(parameters('appName'),'avaibilitySetFront')]",
+    "availabilitySetNode": "[concat(parameters('appName'),'avaibilitySetNode')]"
     
   },
   "resources": [
@@ -157,8 +155,8 @@
           {
             "name": "ipconfig1",
             "properties": {
-              "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "10.0.0.4",
+              "privateIPAllocationMethod": "Dynamic",
+
               "subnet": {
                 "id": "[variables('subnetRef')]"
               }
@@ -191,8 +189,8 @@
           {
             "name": "ipconfig2",
             "properties": {
-              "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "10.0.0.5",
+              "privateIPAllocationMethod": "Dynamic",
+
               "subnet": {
                 "id": "[variables('subnetRef')]"
               }
@@ -396,7 +394,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmNameFront1'),'/newuserscript')]",
+      "name": "[concat(variables('vmNameFront1'),'/newuserscript',variables('vmNameFront1'))]",
       "apiVersion": "2015-05-01-preview",
       "location": "[parameters('destLocation')]",
       "dependsOn": [
@@ -421,7 +419,7 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('vmNameFront1'),'/newuserscript',variables('vmNameFront1'))]",
+      "name": "[variables('vmNameFront2')]",
       "location": "[parameters('destLocation')]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountNameVhd'))]",
