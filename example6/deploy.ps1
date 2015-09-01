@@ -1,4 +1,4 @@
-$exempleName = "example65"
+$exempleName = "example67"
 $appName = $("hackfest"+$exempleName)
 
 
@@ -12,6 +12,6 @@ $templateParametersFile = "azuredeploy.parameters.json"
     
 #Switch-AzureMode AzureResourceManager
 #New-AzureResourceGroup -Location $theLocation -Name $theName -DeploymentName $theDeploymentName -TemplateFile $templateFile -TemplateParameterFile $templateParametersFile -appName $appName
-New-AzureResourceGroup -Location $theLocation -Name $theName -DeploymentName $theDeploymentName -TemplateFile $templateFile -appName $appName -Verbose
+New-AzureResourceGroup -Location $theLocation -Name $theName -DeploymentName $theDeploymentName -TemplateFile $templateFile -appName $appName -Verbose -Debug
 
 

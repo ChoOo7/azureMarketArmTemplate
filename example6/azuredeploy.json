@@ -498,7 +498,7 @@
           {
             "name": "InternalLoadBalancerFront",
             "privateIPAllocationMethod": "Static",
-            "privateIPAddress": "10.0.0.200",
+            "privateIPAddress": "10.0.0.30",
             "properties": {
               "subnet": {
                 "id": "[variables('subnetRef')]"
