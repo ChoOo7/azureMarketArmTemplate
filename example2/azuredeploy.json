@@ -202,9 +202,9 @@
         "typeHandlerVersion": "1.2",
         "settings": {
           "fileUris": [
-            "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/lamp-app/install_lamp.sh"
+            "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example2/do.sh"
           ],
-          "commandToExecute": "[concat('sh install_lamp.sh ', parameters('mySqlPassword'))]"
+          "commandToExecute": "[concat('bash do.sh ', parameters('mySqlPassword'), ' ', parameters('newStorageAccountName'),' ', parameters('dnsNameForPublicIP'))]"
         }
       }
     }
