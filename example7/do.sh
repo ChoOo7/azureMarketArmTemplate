@@ -29,11 +29,18 @@ echo $3  >> provisioning
 #steps :
 
 #Always
-DEBIAN_FRONTEND=noninteractive
-export DEBIAN_FRONTEND=noninteractive
 
-sudo apt-get update && sudo apt-get dist-upgrade -y
-sudo apt-get install -y apache2 htop
+
+echo "" > /tmp/do.sh
+echo DEBIAN_FRONTEND=noninteractive >> /tmp/do.sh
+echo export DEBIAN_FRONTEND=noninteractive >> /tmp/do.sh
+echo ENV DEBIAN_FRONTEND noninteractive >> /tmp/do.sh
+echo "apt-get update && sudo apt-get dist-upgrade -y" >> /tmp/do.sh
+echo "apt-get install -y apache2 htop" >> /tmp/do.sh
+
+
+
+sudo bash /tmp/do.sh
 
 if [[ "$1" == node* ]]
 then
