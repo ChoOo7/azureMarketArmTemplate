@@ -1,4 +1,4 @@
-$exempleName = "example62"
+$exempleName = "example63"
 
 
 #Copied from https://github.com/Azure/azure-quickstart-templates/tree/master/201-2-vms-loadbalancer-natrules

@@ -200,6 +200,12 @@
                   "id": "[concat(variables('internallbID'), '/backendAddressPools/InternalLoadBalancerBackend')]"
                 }
               ]
+               #,
+              #"loadBalancerInboundNatRules": [
+                #  {
+            #    "id": "[concat(variables('lbID'),'/inboundNatRules/SSH-VM-node', add(1, copyindex()))]"
+          #  }
+          #   ]
             }
           }
         ]
