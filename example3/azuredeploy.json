@@ -30,7 +30,8 @@
     "imageOffer": "UbuntuServer",
     "OSDiskNameFront1": "osdiskforlinuxfront1",
     "OSDiskNameFront2": "osdiskforlinuxfront2",
-    "nicName": "myVMNic",
+    "nicNameFront1": "myVMFront1Nic",
+    "nicNameFront2": "myVMFront2Nic",
     "addressPrefix": "10.0.0.0/16",
     "subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
@@ -39,16 +40,16 @@
     "vmStorageAccountContainerName": "vhds",
     
     
-    "newStorageAccountNameVhd": "[concat(variables('appName'),'-brainsonic-vhd')]",
+    "newStorageAccountNameVhd": "[concat(parameters('appName'),'bsvhd')]",
     "storageAccountTypeVhd": "Standard_LRS",
     
-    "newStorageAccountName": "[concat(variables('appName'),'-brainsonic-vhd')]",
+    "newStorageAccountName": "[concat(parameters('appName'),'bsdata')]",
     "storageAccountType": "Standard_LRS",
     
     "vmSize": "Standard_D2",
     
-    "vmNameFront1": "[concat(variables('appName'),'-front1')]",
-    "vmNameFront2": "[concat(variables('appName'),'-front2')]",
+    "vmNameFront1": "[concat(parameters('appName'),'-front1')]",
+    "vmNameFront2": "[concat(parameters('appName'),'-front2')]",
     
     "vmDiskUriFront1": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameFront1'),'.vhd')]",
     "vmDiskUriFront2": "[concat('http://',variables('newStorageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskNameFront2'),'.vhd')]",
@@ -56,10 +57,17 @@
     "virtualNetworkName": "MyVNET",
     "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('virtualNetworkName'))]",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('subnetName'))]",
-    "dnsNameForPublicIP": "[concat(variables('appName'),'-brainsonic')]",
+    "dnsNameForPublicIP": "[concat(parameters('appName'),'-brainsonic')]",
     
-    "loadBalancerName": "[concat(variables('appName'),'-brainsonic-lb')]"
+    "loadBalancerName": "[concat(parameters('appName'),'-brainsonic-lb')]",
+    "LbName": "[variables('loadBalancerName')]",
+    "LbID": "[resourceId('Microsoft.Network/loadBalancers',variables('LbName'))]",
+    "LbIPConfigName": "LBFrontEnd",
+    "LbIPConfigID": "[concat(variables('LbID'),'/frontendIPConfigurations/', variables('LbIPConfigName'))]",
+    "LbBackendPoolName": "swarm-pool",
     
+    "availabilitySetFront": "avaibilitySetFront",
+    "availabilitySetSql": "avaibilitySetSql"
     
   },
   "resources": [
@@ -117,33 +125,65 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[variables('nicName')]",
+      "name": "[variables('nicNameFront1')]",
       "location": "[parameters('destLocation')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
+        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('LbName'))]"
       ],
       "properties": {
         "ipConfigurations": [
           {
             "name": "ipconfig1",
             "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
-              },
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.0.0.4",
               "subnet": {
                 "id": "[variables('subnetRef')]"
               }
             },
             "loadBalancerBackendAddressPools": [
               {
-                "id": "[concat('Microsoft.Network/loadBalancers/',variables('loadBalancerName'),'/backendAddressPools/BackendPool1')]"
+                "id": "[concat(variables('LbID'), '/backendAddressPools/', variables('LbBackendPoolName'))]"
               }
             ],
             "loadBalancerInboundNatRules": [
               {
-                "id": "[concat('Microsoft.Network/loadBalancers/',variables('loadBalancerName'),'/inboundNatRule/RDP')]"
+                "id": "[concat(variables('LbID'),'/inboundNatRules/SSH-front1')]"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nicNameFront2')]",
+      "location": "[parameters('destLocation')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('LbName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig2",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.0.0.5",
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            },
+            "loadBalancerBackendAddressPools": [
+              {
+                "id": "[concat(variables('LbID'), '/backendAddressPools/', variables('LbBackendPoolName'))]"
+              }
+            ],
+            "loadBalancerInboundNatRules": [
+              {
+                "id": "[concat(variables('LbID'),'/inboundNatRules/SSH-front2')]"
               }
             ]
           }
@@ -151,51 +191,95 @@
       }
     },
     
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetFront')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[parameters('destLocation')]",
+      "properties": {}
+    },
+    
     
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Network/loadBalancers",
-      "name": "[parameters('loadBalancerName')]",
+      "name": "[variables('loadBalancerName')]",
       "location": "[parameters('destLocation')]",
       "dependsOn": [
-        "[variables('vnetID')]"
+        "[variables('vnetID')]",
+        "[concat('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]"
       ],
       "properties": {
         "frontendIpConfigurations": [
           {
             "properties": {
-              "subnet": {
-                "Id": "[variables('subnetRef')]"
-              },
-              "privateIPAddress": "10.0.2.6",
-              "privateIPAllocationMethod": "Static"
+              
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+              }
             },
-            "name": "LoadBalancerFrontend"
+            "name": "[variables('LbIPConfigName')]"
           }
         ],
         "backendAddressPools": [
           {
-            "name": "BackendPool1"
+            "name": "[variables('LbBackendPoolName')]"
           }
         ],
         "loadBalancingRules": [
           {
             "properties": {
               "frontendIPConfiguration": {
-                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/frontendIpConfigurations/LoadBalancerFrontend')]"
+                "id": "[variables('LbIPConfigID')]"
               },
               "backendAddressPool": {
-                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/backendAddressPools/BackendPool1')]"
+                 "id": "[concat(variables('LbID'),'/backendAddressPools/', variables('LbBackendPoolName'))]"
               },
               "probe": {
-                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancerName')), '/probes/lbprobe')]"
+                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/ApacheHTTPProbe')]"
               },
               "protocol": "Tcp",
               "frontendPort": 80,
               "backendPort": 80,
               "idleTimeoutInMinutes": 5
             },
-            "Name": "Apache HTTP"
+            "Name": "ApacheHTTP"
+          },
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('LbIPConfigID')]"
+              },
+              "backendAddressPool": {
+                 "id": "[concat(variables('LbID'),'/backendAddressPools/', variables('LbBackendPoolName'))]"
+              },
+              "probe": {
+                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/ApacheHTTPProbe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "idleTimeoutInMinutes": 5
+            },
+            "Name": "ApacheHTTPS"
+          },
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('LbIPConfigID')]"
+              },
+              "backendAddressPool": {
+                 "id": "[concat(variables('LbID'),'/backendAddressPools/', variables('LbBackendPoolName'))]"
+              },
+              "probe": {
+                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/ApacheHTTPProbe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 11443,
+              "backendPort": 11443,
+              "idleTimeoutInMinutes": 5
+            },
+            "Name": "ApacheHTTPSAdminFront1"
           }
         ],
         "probes": [
@@ -206,7 +290,33 @@
               "intervalInSeconds": 10,
               "numberOfProbes": 2
             },
-            "name": "Apache HTTP Probe"
+            "name": "ApacheHTTPProbe"
+          }
+        ],
+        "inboundNatRules": [
+          {
+            "name": "SSH-front1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('LbIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11121,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-front2",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('LbIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11122,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
           }
         ]
       }
@@ -219,9 +329,12 @@
       "location": "[parameters('destLocation')]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountNameVhd'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNameFront1'))]"
       ],
       "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetFront'))]"
+        },
         "hardwareProfile": {
           "vmSize": "[variables('vmSize')]"
         },
@@ -249,7 +362,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicNameFront1'))]"
             }
           ]
         }
@@ -257,11 +370,11 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmName'),'/newuserscript')]",
+      "name": "[concat(variables('vmNameFront1'),'/newuserscript')]",
       "apiVersion": "2015-05-01-preview",
       "location": "[parameters('destLocation')]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmNameFront1'))]"
       ],
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
@@ -271,7 +384,7 @@
           "fileUris": [
             "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example3/do.sh"
           ],
-          "commandToExecute": "[concat('bash do.sh front1', parameters('appName'))]"
+          "commandToExecute": "[concat('bash do.sh front1', parameters('appName'), ' ')]"
         }
       }
     }
@@ -286,9 +399,12 @@
       "location": "[parameters('destLocation')]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountNameVhd'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNameFront2'))]"
       ],
       "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetFront'))]"
+        },
         "hardwareProfile": {
           "vmSize": "[variables('vmSize')]"
         },
@@ -316,7 +432,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicNameFront2'))]"
             }
           ]
         }
@@ -324,7 +440,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmName'),'/newuserscript')]",
+      "name": "[concat(variables('vmNameFront2'),'/newuserscript',variables('vmNameFront2'))]",
       "apiVersion": "2015-05-01-preview",
       "location": "[parameters('destLocation')]",
       "dependsOn": [

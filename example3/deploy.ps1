@@ -1,4 +1,4 @@
-$exempleName = "example3"
+$exempleName = "example33"
 
 
 $theLocation = "West Europe"

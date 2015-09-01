@@ -24,3 +24,6 @@ echo $2  >> provisioning
 
 echo "Arg3 : " >> provisioning
 echo $3  >> provisioning
+
+
+#"commandToExecute": "[concat('bash azure-imghlpr.sh ', variables('storageAccountName'),' ',listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1,' ', variables('srcImage') )]"
