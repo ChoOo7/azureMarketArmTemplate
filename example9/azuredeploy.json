@@ -29,8 +29,8 @@
     }
   },
   "variables": {
-    "numberOfFront": 2,
-    "numberOfNode": 3,
+    "numberOfFront": 1,
+    "numberOfNode": 1,
 
     "vhdUrl": "http://hackfestexample74bsvhd.blob.core.windows.net/system/Microsoft.Compute/Images/vhds/testtemplate1-osDisk.9beca0d1-a283-4994-b5b1-ba9030ffef2c.vhd",
     
@@ -582,13 +582,12 @@
             "osType": "Linux",
             "createOption": "FromImage",
             "image": {
-              "uri": "http://portalvhdsf3yyfgr1j7yd1.blob.core.windows.net/vhds/myAwesomeVMImage1-os-2015-09-02.vhd?sv=2014-02-14&sr=c&sig=Xjg63tzrlHFJBxcReg4WvOJBpgT4%2F05t2W7c9r3G738%3D&st=2015-08-31T22%3A00%3A00Z&se=2016-09-09T22%3A00%3A00Z&sp=rl"
+              "uri": "http://rugby.chooo7.com/image.vhd"
             },
             "vhd": {
               "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/','osdisk', add(1, copyindex()), '.vhd')]"
             },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
+            "caching": "ReadWrite"
           }
         },
         "networkProfile": {
@@ -633,13 +632,12 @@
             "name": "testtemplate1-osDisk.9beca0d1-a283-4994-b5b1-ba9030ffef2c.vhd",
             "createOption": "FromImage",
             "image": {
-              "uri": "http://portalvhdsf3yyfgr1j7yd1.blob.core.windows.net/vhds/myAwesomeVMImage1-os-2015-09-02.vhd?sv=2014-02-14&sr=c&sig=Xjg63tzrlHFJBxcReg4WvOJBpgT4%2F05t2W7c9r3G738%3D&st=2015-08-31T22%3A00%3A00Z&se=2016-09-09T22%3A00%3A00Z&sp=rl"
+              "uri": "http://rugby.chooo7.com/image.vhd"
             },
             "vhd": {
               "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/','osdisknode', add(1, copyindex()), '.vhd')]"
             },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
+            "caching": "ReadWrite"
           }
         },
         "networkProfile": {
