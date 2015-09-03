@@ -1,0 +1,777 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique application name."
+      }
+    },
+
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Admin password"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2",
+      "allowedValues": [
+        "Standard_A0",
+        "Standard_A1",
+        "Standard_A2",
+        "Standard_A3",
+        "Standard_A4",
+        "Standard_D2"
+      ]
+    }
+  },
+  "variables": {
+    "numberOfFront": 2,
+    "numberOfNode": 3,
+
+    "ubuntuOSVersion": "15.04",
+    "imagePublisher": "Canonical",
+    "imageOffer": "UbuntuServer",
+
+    "storageAccountTypeVhd": "Standard_LRS",
+    "storageAccountType": "Standard_LRS",
+
+    "postInstallScriptUrl": "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example10/do.sh",
+    "imghelperInstallScriptUrl": "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example10/imghelper.sh",
+
+    "frontVhdSourceUrl": "http://rugby.chooo7.com/image.vhd",
+    "nodeVhdSourceUrl": "http://rugby.chooo7.com/image.vhd",
+
+    "vmStorageAccountContainerName": "vhds",
+
+    "availabilitySetNameFront": "front",
+    "availabilitySetNameNode": "node",
+    "addressPrefix": "10.0.0.0/16",
+    "subnetName": "Subnet-1",
+    "subnetPrefix": "10.0.0.0/24",
+    "publicIPAddressType": "Dynamic",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',variables('vnetName'))]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables ('subnetName'))]",
+    "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]",
+    "lbID": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]",
+    "internallbID": "[resourceId('Microsoft.Network/loadBalancers',variables('internallbName'))]",
+    
+    "frontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerFront')]",
+    "vmFrontNamePrefix": "[concat(parameters('appName'), '-front')]",
+    "vmNodeNamePrefix": "[concat(parameters('appName'), '-node')]",
+
+
+    "adminUsername": "brainsonicadmin",
+    "storageAccountNameVhd": "[concat(parameters('appName'), 'bsvhd')]",
+    "storageAccountName": "[concat(parameters('appName'), 'bs')]",
+
+    "lbName": "[concat(parameters('appName'), 'bslb')]",
+    "internallbName": "[concat('internal',parameters('appName'), 'bslb')]",
+
+    "vnetName" : "[concat(parameters('appName'), 'bsvnet')]",
+    "publicIPAddressName" : "[concat(parameters('appName'), 'bspublicip')]",
+    "dnsNameforLBIP" : "[concat(parameters('appName'), 'bsdns')]",
+
+    "nicNamePrefix" : "[concat(parameters('appName'), '')]",
+    "nicNamePostfix" : "-bsnic",
+    "nicNameFrontPart" : "-front",
+    "nicNameNodePart" : "-node",
+
+    "imghelperNicName" : "imghelpernic",
+    "imghelperVmName" : "imghelpervm",
+
+    "vmDiskUriimghelpervm": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/osdiskimghelper.vhd')]",
+
+    "secret" : "theGitHUbVersionIsNotRealSecretDearReader",
+
+    "createDNSAndOtherStuffScriptUrl": "[concat('http://saltmaster.brainsonic.com/createExternalResources.php?secret=', variables('secret'), '&appName=', parameters('appName'), '&numberOfFront=', variables('numberOfFront'), '&numberOfNode=', parameters('numberOfNode'), '&location=', resourceGroup().location)]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountNameVhd')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "accountType": "[variables('storageAccountTypeVhd')]"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "accountType": "[variables('storageAccountType')]"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetNameFront')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetNameNode')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "properties": {}
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('publicIPAddressName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('dnsNameforLBIP')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('vnetName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('subnetPrefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('imghelperNicName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "10.0.0.212",
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('nicNamePrefix'), variables('nicNameFrontPart'), add(1, copyindex()), variables('nicNamePostfix'))]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[variables('numberOfFront')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat('10.0.0.', add(11, copyindex()))]",
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(variables('lbID'), '/backendAddressPools/LoadBalancerBackendFront')]"
+                }
+              ],
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat(variables('lbID'),'/inboundNatRules/SSH-VM-front', add(1, copyindex()))]"
+                },
+                {
+                  "id": "[concat(variables('lbID'),'/inboundNatRules/HTTPS-admin-front', add(1, copyindex()))]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('nicNamePrefix'), variables('nicNameNodePart'), add(1, copyindex()), variables('nicNamePostfix'))]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nicNodeLoop",
+        "count": "[variables('numberOfNode')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('internallbName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[concat('10.0.0.', add(101, copyindex()))]",
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(variables('internallbID'), '/backendAddressPools/InternalLoadBalancerBackend')]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "name": "[variables('lbName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "LoadBalancerFront",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[variables('publicIPAddressID')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "LoadBalancerBackendFront"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('lbID'),'/backendAddressPools/LoadBalancerBackendFront')]"
+              },
+              "probe": {
+                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('lbName')), '/probes/ApacheHTTPProbe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "idleTimeoutInMinutes": 5
+            },
+            "Name": "ApacheHTTP"
+          },
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('lbID'),'/backendAddressPools/LoadBalancerBackendFront')]"
+              },
+              "probe": {
+                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('lbName')), '/probes/ApacheHTTPProbe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "idleTimeoutInMinutes": 5
+            },
+            "Name": "ApacheHTTPS"
+          }
+        ],
+        "probes": [
+          {
+            "properties": {
+              "protocol": "Tcp",
+              "port": 80,
+              "intervalInSeconds": 10,
+              "numberOfProbes": 2
+            },
+            "name": "ApacheHTTPProbe"
+          }
+        ],
+        "inboundNatRules": [
+          {
+            "name": "SSH-VM-front1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11122,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-front2",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11123,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-front3",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11124,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-front4",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11125,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "SSH-VM-front5",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11126,
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+
+          {
+            "name": "HTTPS-admin-front1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11443,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "HTTPS-admin-front2",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11444,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "HTTPS-admin-front3",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11445,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "HTTPS-admin-front4",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11446,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "HTTPS-admin-front5",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('frontEndIPConfigID')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": 11447,
+              "backendPort": 11443,
+              "enableFloatingIP": false
+            }
+          }
+        ]
+      }
+    },
+
+
+    {
+      "apiVersion": "2015-05-01-preview",
+      "name": "[variables('internallbName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "InternalLoadBalancerFront",
+            "privateIPAllocationMethod": "Static",
+            "privateIPAddress": "10.0.0.30",
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "InternalLoadBalancerBackend"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('internalLbID'),'/frontendIPConfigurations/InternalLoadBalancerFront')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(variables('internalLbID'),'/backendAddressPools/InternalLoadBalancerBackend')]"
+              },
+              "probe": {
+                "Id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('internallbName')), '/probes/MySQLProbe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 3306,
+              "backendPort": 3306,
+              "idleTimeoutInMinutes": 30
+            },
+            "Name": "MySQL"
+          }
+        ],
+        "probes": [
+          {
+            "properties": {
+              "protocol": "Tcp",
+              "port": 9207,
+              "intervalInSeconds": 10,
+              "numberOfProbes": 2
+            },
+            "name": "MySQLProbe"
+          }
+        ]
+      }
+    }
+    ,
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('imghelperVmName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('imghelperNicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computername": "[variables('imghelperVmName')]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[variables('ubuntuOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "imghelperosdisk",
+            "vhd": {
+              "uri": "[variables('vmDiskUriimghelpervm')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('imghelperNicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('imghelperVmName'), 'extscriptfront')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('imghelperVmName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.2",
+        "settings": {
+          "fileUris": [
+            "[variables('imghelperInstallScriptUrl')]"
+          ],
+          "commandToExecute": "[concat('bash imghelper.sh front ', variables('storageAccountNameVhd'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd')), '2015-05-01-preview').key1, ' ', variables('frontVhdSourceUrl'))]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('imghelperVmName'), 'extscriptnode')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('imghelperVmName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.2",
+        "settings": {
+          "fileUris": [
+            "[variables('imghelperInstallScriptUrl')]"
+          ],
+          "commandToExecute": "[concat('bash imghelper.sh node ', variables('storageAccountNameVhd'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd')), '2015-05-01-preview').key1, ' ', variables('nodeVhdSourceUrl'))]"
+        }
+      }
+    },
+
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()))]",
+      "copy": {
+        "name": "virtualMachineLoop",
+        "count": "[variables('numberOfFront')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNamePrefix'), variables('nicNameFrontPart'), add(1, copyindex()), variables('nicNamePostfix'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNameFront'))]",
+        "[concat('Microsoft.Compute/virtualMachines/extensions/', variables('imghelperVmName'), 'extscriptfront')]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetNameFront'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computername": "[concat(variables('vmFrontNamePrefix'), add(1, copyIndex()))]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "osDisk": {
+            "name": "osdisk",
+            "osType": "Linux",
+            "createOption": "FromImage",
+            "image": {
+              "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/front-os-disk-img.vhd')]"
+            },
+            "vhd": {
+              "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/','osdisk', add(1, copyindex()), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNamePrefix'), variables('nicNameFrontPart'), add(1, copyindex()), variables('nicNamePostfix')))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()))]",
+      "copy": {
+        "name": "virtualMachineNodeLoop",
+        "count": "[variables('numberOfNode')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNamePrefix'), variables('nicNameNodePart'), add(1, copyindex()), variables('nicNamePostfix'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNameNode'))]",
+        "[concat('Microsoft.Compute/virtualMachines/extensions/', variables('imghelperVmName'), 'extscriptnode')]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetNameNode'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computername": "[concat(variables('vmNodeNamePrefix'), add(1, copyIndex()))]",
+          "adminUsername": "[variables('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "osDisk": {
+            "name": "osdisk",
+            "osType": "Linux",
+            "name": "testtemplate1-osDisk.9beca0d1-a283-4994-b5b1-ba9030ffef2c.vhd",
+            "createOption": "FromImage",
+            "image": {
+              "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/node-os-disk-img.vhd')]"
+            },
+            "vhd": {
+              "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/','osdisknode', add(1, copyindex()), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNamePrefix'), variables('nicNameNodePart'), add(1, copyindex()), variables('nicNamePostfix')))]"
+            }
+          ]
+        }
+      }
+    },
+
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()), '/extscript')]",
+      "copy": {
+        "name": "virtualMachineExtFrontLoop",
+        "count": "[variables('numberOfFront')]"
+      },
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmFrontNamePrefix'), add(1, copyindex()))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.2",
+        "settings": {
+          "fileUris": [
+            "[variables('postInstallScriptUrl')]"
+          ],
+          "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', add(1, copyindex()), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, variables('secret'))]"
+        }
+      }
+    },
+
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmFrontNamePrefix'), '1', '/extscript')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmFrontNamePrefix'), '1')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.2",
+        "settings": {
+          "fileUris": [
+            "[variables('createDNSAndOtherStuffScriptUrl')]"
+          ],
+          "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', add(1, copyindex()), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, variables('secret'))]"
+        }
+      }
+    },
+
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()), '/extscript')]",
+      "copy": {
+        "name": "virtualMachineExtNodeLoop",
+        "count": "[variables('numberOfNode')]"
+      },
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmNodeNamePrefix'), add(1, copyindex()))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.2",
+        "settings": {
+          "fileUris": [
+            "[variables('postInstallScriptUrl')]"
+          ],
+          "commandToExecute": "[concat('sh do.sh node', add(1, copyindex()), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
+        }
+      }
+
+    }
+
+  ]
+}
