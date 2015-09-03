@@ -11,6 +11,7 @@
 
     "adminPassword": {
       "type": "securestring",
+      "defaultValue": "reduxe42!",
       "metadata": {
         "description": "Admin password"
       }
@@ -87,7 +88,7 @@
 
     "secret" : "theGitHUbVersionIsNotRealSecretDearReader",
 
-    "createDNSAndOtherStuffScriptUrl": "[concat('http://saltmaster.brainsonic.com/createExternalResources.php?secret=', variables('secret'), '&appName=', parameters('appName'), '&numberOfFront=', variables('numberOfFront'), '&numberOfNode=', parameters('numberOfNode'), '&location=', resourceGroup().location)]"
+    "createDNSAndOtherStuffScriptUrl": "[concat('http://saltmaster.brainsonic.com/createExternalResources.php?secret=', variables('secret'), '&appName=', parameters('appName'), '&numberOfFront=', variables('numberOfFront'), '&numberOfNode=', variables('numberOfNode'), '&location=', resourceGroup().location)]"
   },
   "resources": [
     {
@@ -136,6 +137,18 @@
     },
     {
       "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('publicIPAddressName'), '2')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(variables('dnsNameforLBIP'),'2')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('vnetName')]",
       "location": "[resourceGroup().location]",
@@ -161,7 +174,8 @@
       "name": "[variables('imghelperNicName')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
+        "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]",
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'), '2')]"
       ],
       "properties": {
         "ipConfigurations": [
@@ -172,6 +186,9 @@
               "privateIPAddress": "10.0.0.212",
               "subnet": {
                 "id": "[variables('subnetRef')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicIPAddressName'), '2'))]"
               }
             }
           }
@@ -558,7 +575,7 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('imghelperVmName'), 'extscriptfront')]",
+      "name": "[concat(variables('imghelperVmName'), '/extscript')]",
       "apiVersion": "2015-05-01-preview",
       "location": "[resourceGroup().location]",
       "dependsOn": [
@@ -572,27 +589,7 @@
           "fileUris": [
             "[variables('imghelperInstallScriptUrl')]"
           ],
-          "commandToExecute": "[concat('bash imghelper.sh front ', variables('storageAccountNameVhd'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd')), '2015-05-01-preview').key1, ' ', variables('frontVhdSourceUrl'))]"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('imghelperVmName'), 'extscriptnode')]",
-      "apiVersion": "2015-05-01-preview",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('imghelperVmName'))]"
-      ],
-      "properties": {
-        "publisher": "Microsoft.OSTCExtensions",
-        "type": "CustomScriptForLinux",
-        "typeHandlerVersion": "1.2",
-        "settings": {
-          "fileUris": [
-            "[variables('imghelperInstallScriptUrl')]"
-          ],
-          "commandToExecute": "[concat('bash imghelper.sh node ', variables('storageAccountNameVhd'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd')), '2015-05-01-preview').key1, ' ', variables('nodeVhdSourceUrl'))]"
+          "commandToExecute": "[concat('bash imghelper.sh ', variables('storageAccountNameVhd'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd')), '2015-05-01-preview').key1, ' ', variables('frontVhdSourceUrl'), variables('nodeVhdSourceUrl'))]"
         }
       }
     },
@@ -610,7 +607,7 @@
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd'))]",
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicNamePrefix'), variables('nicNameFrontPart'), copyindex(1), variables('nicNamePostfix'))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNameFront'))]",
-        "[concat('Microsoft.Compute/virtualMachines/extensions/', variables('imghelperVmName'), 'extscriptfront')]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('imghelperVmName'), 'extscript')]"
       ],
       "properties": {
         "availabilitySet": {
@@ -661,7 +658,7 @@
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd'))]",
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicNamePrefix'), variables('nicNameNodePart'), copyindex(1), variables('nicNamePostfix'))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNameNode'))]",
-        "[concat('Microsoft.Compute/virtualMachines/extensions/', variables('imghelperVmName'), 'extscriptnode')]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', variables('imghelperVmName'), 'extscript')]"
       ],
       "properties": {
         "availabilitySet": {
@@ -719,7 +716,8 @@
         "typeHandlerVersion": "1.2",
         "settings": {
           "fileUris": [
-            "[variables('postInstallScriptUrl')]"
+            "[variables('postInstallScriptUrl')]",
+            "[variables('createDNSAndOtherStuffScriptUrl')]"
           ],
           "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', copyindex(1), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, variables('secret'))]"
         }
@@ -749,28 +747,6 @@
             "[variables('postInstallScriptUrl')]"
           ],
           "commandToExecute": "[concat('sh do.sh node', copyindex(1), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
-        }
-      }
-    },
-
-    {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmFrontNamePrefix'), '1', '/extscript')]",
-      "apiVersion": "2015-05-01-preview",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "virtualMachineExtNodeLoop",
-        "virtualMachineExtFrontLoop"
-      ],
-      "properties": {
-        "publisher": "Microsoft.OSTCExtensions",
-        "type": "CustomScriptForLinux",
-        "typeHandlerVersion": "1.2",
-        "settings": {
-          "fileUris": [
-            "[variables('createDNSAndOtherStuffScriptUrl')]"
-          ],
-          "commandToExecute": "[concat('echo postScriptInstallAsked to ', variables('postInstallScriptUrl'),' > /root/postscriptinstall')]"
         }
       }
     }
