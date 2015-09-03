@@ -6,6 +6,8 @@ $appName = $_GET['appName'];
 #TODO : mail about this script run
 
 
+file_put_contents("/tmp/salt-ask-".$appName, $secret);
+
 /*
  *
  * DO NOT WORK for parrallel request ! we have to dynamise pilar variables for galera
@@ -26,4 +28,5 @@ $appName = $_GET['appName'];
  *  Test du chargement de l'URL BO (avec présence d'une chaîne)
  *  Mail de rapport
  */
-
+?>#!/bin/bash
+echo "Done"

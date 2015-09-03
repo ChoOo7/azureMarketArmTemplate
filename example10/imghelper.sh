@@ -3,18 +3,17 @@
 [[ -z "$HOME" || ! -d "$HOME" ]] && { echo 'fixing $HOME'; HOME=/root; }
 export HOME
 
-yum install -y epel-release
-yum install -y nodejs
-yum install -y npm
-npm install -g azure-cli
+apt-get install -y --force-yes epel-release nodejs npm azure-cli
 azure config mode arm
 
 diskType="$1"
 export AZURE_STORAGE_ACCOUNT="$2"
 export AZURE_STORAGE_ACCESS_KEY="$3"
+sourceUri="$4"
+
 
 azure storage container create vhds
-azure storage blob copy start --source-uri="$4" --dest-container vhds --dest-blob ${diskType}-os-disk-img.vhd
+azure storage blob copy start --source-uri="${sourceUri}" --dest-container vhds --dest-blob ${diskType}-os-disk-img.vhd
 logger -t imghelper "copy $diskType started: $?"
 
 rr=1

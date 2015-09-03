@@ -181,7 +181,7 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('nicNamePrefix'), variables('nicNameFrontPart'), add(1, copyindex()), variables('nicNamePostfix'))]",
+      "name": "[concat(variables('nicNamePrefix'), variables('nicNameFrontPart'), copyindex(1), variables('nicNamePostfix'))]",
       "location": "[resourceGroup().location]",
       "copy": {
         "name": "nicLoop",
@@ -208,10 +208,10 @@
               ],
               "loadBalancerInboundNatRules": [
                 {
-                  "id": "[concat(variables('lbID'),'/inboundNatRules/SSH-VM-front', add(1, copyindex()))]"
+                  "id": "[concat(variables('lbID'),'/inboundNatRules/SSH-VM-front', copyindex(1))]"
                 },
                 {
-                  "id": "[concat(variables('lbID'),'/inboundNatRules/HTTPS-admin-front', add(1, copyindex()))]"
+                  "id": "[concat(variables('lbID'),'/inboundNatRules/HTTPS-admin-front', copyindex(1))]"
                 }
               ]
             }
@@ -222,7 +222,7 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('nicNamePrefix'), variables('nicNameNodePart'), add(1, copyindex()), variables('nicNamePostfix'))]",
+      "name": "[concat(variables('nicNamePrefix'), variables('nicNameNodePart'), copyindex(1), variables('nicNamePostfix'))]",
       "location": "[resourceGroup().location]",
       "copy": {
         "name": "nicNodeLoop",
@@ -600,7 +600,7 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()))]",
+      "name": "[concat(variables('vmFrontNamePrefix'), copyindex(1))]",
       "copy": {
         "name": "virtualMachineLoop",
         "count": "[variables('numberOfFront')]"
@@ -608,7 +608,7 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNamePrefix'), variables('nicNameFrontPart'), add(1, copyindex()), variables('nicNamePostfix'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNamePrefix'), variables('nicNameFrontPart'), copyindex(1), variables('nicNamePostfix'))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNameFront'))]",
         "[concat('Microsoft.Compute/virtualMachines/extensions/', variables('imghelperVmName'), 'extscriptfront')]"
       ],
@@ -620,7 +620,7 @@
           "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
-          "computername": "[concat(variables('vmFrontNamePrefix'), add(1, copyIndex()))]",
+          "computername": "[concat(variables('vmFrontNamePrefix'), copyindex(1))]",
           "adminUsername": "[variables('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -633,7 +633,7 @@
               "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/front-os-disk-img.vhd')]"
             },
             "vhd": {
-              "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/','osdisk', add(1, copyindex()), '.vhd')]"
+              "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/','osdisk', copyindex(1), '.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -642,7 +642,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNamePrefix'), variables('nicNameFrontPart'), add(1, copyindex()), variables('nicNamePostfix')))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNamePrefix'), variables('nicNameFrontPart'), copyindex(1), variables('nicNamePostfix')))]"
             }
           ]
         }
@@ -651,7 +651,7 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()))]",
+      "name": "[concat(variables('vmNodeNamePrefix'), copyindex(1))]",
       "copy": {
         "name": "virtualMachineNodeLoop",
         "count": "[variables('numberOfNode')]"
@@ -659,7 +659,7 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNamePrefix'), variables('nicNameNodePart'), add(1, copyindex()), variables('nicNamePostfix'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicNamePrefix'), variables('nicNameNodePart'), copyindex(1), variables('nicNamePostfix'))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetNameNode'))]",
         "[concat('Microsoft.Compute/virtualMachines/extensions/', variables('imghelperVmName'), 'extscriptnode')]"
       ],
@@ -671,7 +671,7 @@
           "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
-          "computername": "[concat(variables('vmNodeNamePrefix'), add(1, copyIndex()))]",
+          "computername": "[concat(variables('vmNodeNamePrefix'), copyindex(1))]",
           "adminUsername": "[variables('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -685,7 +685,7 @@
               "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/node-os-disk-img.vhd')]"
             },
             "vhd": {
-              "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/','osdisknode', add(1, copyindex()), '.vhd')]"
+              "uri": "[concat('http://',variables('storageAccountNameVhd'),'.blob.core.windows.net/vhds/','osdisknode', copyindex(1), '.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -694,7 +694,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNamePrefix'), variables('nicNameNodePart'), add(1, copyindex()), variables('nicNamePostfix')))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicNamePrefix'), variables('nicNameNodePart'), copyindex(1), variables('nicNamePostfix')))]"
             }
           ]
         }
@@ -703,7 +703,7 @@
 
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmFrontNamePrefix'), add(1, copyindex()), '/extscript')]",
+      "name": "[concat(variables('vmFrontNamePrefix'), copyindex(1), '/extscript')]",
       "copy": {
         "name": "virtualMachineExtFrontLoop",
         "count": "[variables('numberOfFront')]"
@@ -711,7 +711,7 @@
       "apiVersion": "2015-05-01-preview",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('vmFrontNamePrefix'), add(1, copyindex()))]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmFrontNamePrefix'), copyindex(1))]"
       ],
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
@@ -721,7 +721,34 @@
           "fileUris": [
             "[variables('postInstallScriptUrl')]"
           ],
-          "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', add(1, copyindex()), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, variables('secret'))]"
+          "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', copyindex(1), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, variables('secret'))]"
+        }
+      }
+    },
+
+
+
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmNodeNamePrefix'), copyindex(1), '/extscript')]",
+      "copy": {
+        "name": "virtualMachineExtNodeLoop",
+        "count": "[variables('numberOfNode')]"
+      },
+      "apiVersion": "2015-05-01-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmNodeNamePrefix'), copyindex(1))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.2",
+        "settings": {
+          "fileUris": [
+            "[variables('postInstallScriptUrl')]"
+          ],
+          "commandToExecute": "[concat('sh do.sh node', copyindex(1), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
         }
       }
     },
@@ -732,7 +759,8 @@
       "apiVersion": "2015-05-01-preview",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('vmFrontNamePrefix'), '1')]"
+        "virtualMachineExtNodeLoop",
+        "virtualMachineExtFrontLoop"
       ],
       "properties": {
         "publisher": "Microsoft.OSTCExtensions",
@@ -742,36 +770,11 @@
           "fileUris": [
             "[variables('createDNSAndOtherStuffScriptUrl')]"
           ],
-          "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', add(1, copyindex()), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, variables('secret'))]"
+          "commandToExecute": "[concat('echo postScriptInstallAsked to ', variables('postInstallScriptUrl'),' > /root/postscriptinstall')]"
         }
       }
-    },
-
-    {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('vmNodeNamePrefix'), add(1, copyindex()), '/extscript')]",
-      "copy": {
-        "name": "virtualMachineExtNodeLoop",
-        "count": "[variables('numberOfNode')]"
-      },
-      "apiVersion": "2015-05-01-preview",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('vmNodeNamePrefix'), add(1, copyindex()))]"
-      ],
-      "properties": {
-        "publisher": "Microsoft.OSTCExtensions",
-        "type": "CustomScriptForLinux",
-        "typeHandlerVersion": "1.2",
-        "settings": {
-          "fileUris": [
-            "[variables('postInstallScriptUrl')]"
-          ],
-          "commandToExecute": "[concat('sh do.sh node', add(1, copyindex()), parameters('appName'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
-        }
-      }
-
     }
+
 
   ]
 }

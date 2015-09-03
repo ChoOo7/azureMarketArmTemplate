@@ -35,14 +35,29 @@ storageAccountKey=$5
 hostname="${appName}-${typeOfVm}${vmNumber}"
 
 
+#Store storage key for future usage
+echo -n $storageAccountName > /root/.storageAccountName
+echo -n $storageAccountKey > /root/.storageAccountKey
+
+chmod 700 /root/.storageAccountName
+chmod 700 /root/.storageAccountKey
+
+sudo service salt-minion stop
+
 echo -n "${hostname}" > /etc/salt/minion_id
-sudo service salt-minion restart
+rm -f /etc/salt/pki/minion/minion_master.pub
+rm -f /etc/salt/pki/minion/minion.pem
+rm -f /etc/salt/pki/minion/minion.pub
+
+sudo apt-get install -y --force-yes salt-minion
+
+sudo service salt-minion start
 
 #Wait for salt minion start
 sleep 30
 
 #Will ask to salt to deploy solution to this VM
-curl -i "http://saltmaster.brainsonic.com/askhighstate.php?hostname=${hostname}" > /root/askInitialInstall
+#curl -i "http://saltmaster.brainsonic.com/askhighstate.php?hostname=${hostname}" > /root/askInitialInstall
 
 
 
