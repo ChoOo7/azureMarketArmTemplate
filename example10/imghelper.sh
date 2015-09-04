@@ -21,9 +21,9 @@ export AZURE_STORAGE_ACCESS_KEY="$2"
 frontSourceUri="$3"
 nodeSourceUri="$4"
 
-
-azure storage container create vhds
-
+echo "creating container"
+azure storage container create --permission Blob vhds
+echo "container created"
 
 
 #Front disk
@@ -42,8 +42,8 @@ rr=1
 while [ $rr -ne 0 ]; do
   sleep 10
   echo "checking state"
-  azure storage blob copy show --json img ${diskType}-os-disk-img.vhd
-  azure storage blob copy show --json img ${diskType}-os-disk-img.vhd | grep '"copyStatus": "success"' >/dev/null
+  azure storage blob copy show --json vhds ${diskType}-os-disk-img.vhd
+  azure storage blob copy show --json vhds ${diskType}-os-disk-img.vhd | grep '"copyStatus": "success"' >/dev/null
   # "copyStatus": "success",  "copyStatus": "pending"
   rr=$?
   echo "state checked"
@@ -64,7 +64,7 @@ if [ "$frontSourceUri" != "$nodeSourceUri" ] ; then
   rr=1
   while [ $rr -ne 0 ]; do
     sleep 10
-    azure storage blob copy show --json img ${diskType}-os-disk-img.vhd | grep '"copyStatus": "success"' >/dev/null
+    azure storage blob copy show --json vhds ${diskType}-os-disk-img.vhd | grep '"copyStatus": "success"' >/dev/null
     # "copyStatus": "success",  "copyStatus": "pending"
     rr=$?
   done

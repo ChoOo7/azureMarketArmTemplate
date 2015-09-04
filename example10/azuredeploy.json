@@ -589,7 +589,7 @@
           "fileUris": [
             "[variables('imghelperInstallScriptUrl')]"
           ],
-          "commandToExecute": "[concat('bash imghelper.sh ', variables('storageAccountNameVhd'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd')), '2015-05-01-preview').key1, ' ', variables('frontVhdSourceUrl'), variables('nodeVhdSourceUrl'))]"
+          "commandToExecute": "[concat('bash imghelper.sh ', variables('storageAccountNameVhd'), ' ', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountNameVhd')), '2015-05-01-preview').key1, ' ', variables('frontVhdSourceUrl'), ' ', variables('nodeVhdSourceUrl'))]"
         }
       }
     },
