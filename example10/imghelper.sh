@@ -3,7 +3,17 @@
 [[ -z "$HOME" || ! -d "$HOME" ]] && { echo 'fixing $HOME'; HOME=/root; }
 export HOME
 
-apt-get install -y --force-yes epel-release nodejs npm azure-cli
+date
+logFile='/root/cp.log'
+sudo touch $logFile
+sudo chmod 777 $logFile
+echo "Debut" >> $logFile
+date >> $logFile
+
+sudo apt-get install -y --force-yes nodejs-legacy npm
+sudo npm install -g azure-cli
+
+
 azure config mode arm
 
 export AZURE_STORAGE_ACCOUNT="$1"
@@ -14,6 +24,9 @@ nodeSourceUri="$3"
 
 azure storage container create vhds
 
+
+
+#Front disk
 diskType="front"
 sourceUri="${frontSourceUri}";
 
@@ -32,9 +45,7 @@ logger -t imghelper "${diskType} success"
 
 
 
-
-
-
+#Node disk
 diskType="node"
 sourceUri="${nodeSourceUri}";
 
@@ -51,6 +62,8 @@ done
 
 logger -t imghelper "${diskType} success"
 
+echo "Fin" >> $logFile
+date >> $logFile
 
 
 exit 0

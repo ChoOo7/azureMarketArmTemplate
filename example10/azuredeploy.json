@@ -719,12 +719,10 @@
             "[variables('postInstallScriptUrl')]",
             "[variables('createDNSAndOtherStuffScriptUrl')]"
           ],
-          "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', copyindex(1), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, variables('secret'))]"
+          "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', copyindex(1), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, '  ', variables('secret'), ' ', variables('numberOfFront'), ' ', variables('numberOfNode'), ' ', resourceGroup().location)]"
         }
       }
     },
-
-
 
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",

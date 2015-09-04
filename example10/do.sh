@@ -31,6 +31,9 @@ typeOfVm=$2
 vmNumber=$3
 storageAccountName=$4
 storageAccountKey=$5
+numberOfFront=$6
+numberOfNode=$7
+location=$8
 
 hostname="${appName}-${typeOfVm}${vmNumber}"
 
@@ -49,6 +52,7 @@ rm -f /etc/salt/pki/minion/minion_master.pub
 rm -f /etc/salt/pki/minion/minion.pem
 rm -f /etc/salt/pki/minion/minion.pub
 
+#Install salt-minion if it's not already installed
 sudo apt-get install -y --force-yes salt-minion
 
 sudo service salt-minion start
@@ -59,7 +63,10 @@ sleep 30
 #Will ask to salt to deploy solution to this VM
 #curl -i "http://saltmaster.brainsonic.com/askhighstate.php?hostname=${hostname}" > /root/askInitialInstall
 
-
+if [ "${typeOfVm}${vmNumber}" -e "front-1" ] then
+  echo "isFront1"
+  curl -i "http://saltmaster.brainsonic.com/createExternalResources.php?secret=${secret}&appName=${appName}&numberOfFront=${numberOfFront}&numberOfNode=${numberOfNode}&location=${location}"
+fi
 
 #If salt-minion-id != hostname
   #Configure salt-minion

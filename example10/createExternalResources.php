@@ -16,6 +16,7 @@ file_put_contents("/tmp/salt-ask-".$appName, $secret);
  *
  * En multi-thread,
  *  N threads pour : on va lancer des highstate sur chacune des machines
+ *    Chacun des state va attendre que la machine se déclare aupres du salt-master. Car elle n'est peut être pas encore provisionnée
  *  1 thread pour créer les PADs
  *  1 thread pour créer les DNSs
  * Lorsque tous les threads sont terminés :
