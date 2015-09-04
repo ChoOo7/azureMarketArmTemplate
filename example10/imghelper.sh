@@ -30,6 +30,7 @@ azure storage container create vhds
 diskType="front"
 sourceUri="${frontSourceUri}";
 
+echo "sourceUri $frontSourceUri"
 echo "storage account $1"
 echo "storage key $2"
 echo "starting copy"
