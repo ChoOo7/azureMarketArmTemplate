@@ -44,8 +44,8 @@
     "postInstallScriptUrl": "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example10/do.sh",
     "imghelperInstallScriptUrl": "https://raw.githubusercontent.com/ChoOo7/azureMarketArmTemplate/master/example10/imghelper.sh",
 
-    "frontVhdSourceUrl": "https://brainsonicbaseimages.blob.core.windows.net/vhds/front-os-disk-img.vhd",
-    "nodeVhdSourceUrl": "https://brainsonicbaseimages.blob.core.windows.net/vhds/front-os-disk-img.vhd",
+    "frontVhdSourceUrl": "https://brainsonicbaseimages.blob.core.windows.net/vhds/front-os-disk-v2-img.vhd",
+    "nodeVhdSourceUrl": "https://brainsonicbaseimages.blob.core.windows.net/vhds/front-os-disk-v2-img.vhd",
 
     "vmStorageAccountContainerName": "vhds",
 

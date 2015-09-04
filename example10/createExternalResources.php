@@ -2,11 +2,36 @@
 
 $secret = $_GET['secret'];
 $appName = $_GET['appName'];
+$numberOfFront = (int)$_GET['numberOfFront'];
+$numberOfNode = (int)$_GET['numberOfNode'];
+
+
+define('CURRENT_DIR', realpath(dirname(__FILE__)));
 
 #TODO : mail about this script run
-
+//TODO inputs
 
 file_put_contents("/tmp/salt-ask-".$appName, $secret);
+
+$tasks = array();
+
+for($i=1; $i<=$numberOfFront; $i++)
+{
+  $command = "php ".CURRENT_DIR."/dohighstate.php ".escapeshellarg($appName)." front ".$i." ";
+  $tasks[] = $command;
+}
+for($i=1; $i<=$numberOfNode; $i++)
+{
+  $command = "php ".CURRENT_DIR."/dohighstate.php ".escapeshellarg($appName)." node ".$i." ";
+  $tasks[] = $command;
+}
+
+$command = "php create-pad.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$tasks[] = $command;
+
+$command = "php create-dns.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$tasks[] = $command;
+
 
 /*
  *

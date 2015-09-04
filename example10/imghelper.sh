@@ -59,7 +59,6 @@ echo "front disk copied"
 logger -t imghelper "${diskType} success"
 
 
-
 date
 #Node disk
 diskType="node"
