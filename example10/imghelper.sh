@@ -30,17 +30,25 @@ azure storage container create vhds
 diskType="front"
 sourceUri="${frontSourceUri}";
 
+echo "storage account $1"
+echo "storage key $2"
+echo "starting copy"
 azure storage blob copy start --source-uri="${sourceUri}" --dest-container vhds --dest-blob ${diskType}-os-disk-img.vhd
+echo "copy started"
 logger -t imghelper "copy $diskType started: $?"
 
 rr=1
 while [ $rr -ne 0 ]; do
   sleep 10
+  echo "checking state"
+  azure storage blob copy show --json img ${diskType}-os-disk-img.vhd
   azure storage blob copy show --json img ${diskType}-os-disk-img.vhd | grep '"copyStatus": "success"' >/dev/null
   # "copyStatus": "success",  "copyStatus": "pending"
   rr=$?
+  echo "state checked"
 done
 
+echo "front disk copied"
 logger -t imghelper "${diskType} success"
 
 
