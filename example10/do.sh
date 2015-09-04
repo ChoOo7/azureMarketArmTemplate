@@ -63,7 +63,7 @@ sleep 30
 #Will ask to salt to deploy solution to this VM
 #curl -i "http://saltmaster.brainsonic.com/askhighstate.php?hostname=${hostname}" > /root/askInitialInstall
 
-if [ "${typeOfVm}${vmNumber}" -e "front-1" ] then
+if [ "${typeOfVm}${vmNumber}" == "front-1" ] ; then
   echo "isFront1"
   curl -i "http://saltmaster.brainsonic.com/createExternalResources.php?secret=${secret}&appName=${appName}&numberOfFront=${numberOfFront}&numberOfNode=${numberOfNode}&location=${location}"
 fi
