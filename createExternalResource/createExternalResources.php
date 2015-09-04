@@ -7,6 +7,7 @@ $numberOfNode = (int)$_GET['numberOfNode'];
 
 
 define('CURRENT_DIR', realpath(dirname(__FILE__)));
+define('_SUB_DIR', CURRENT_DIR.'/_sub/');
 
 #TODO : mail about this script run
 //TODO inputs
@@ -16,27 +17,27 @@ file_put_contents("/tmp/salt-ask-".$appName, $secret);
 $tasks = array();
 
 
-$command = "sudo php create-pad.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$command = "sudo php "._SUB_DIR."create-pad.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 $tasks[] = $command;
 
-$command = "sudo php create-dns.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$command = "sudo php "._SUB_DIR."create-dns.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 $tasks[] = $command;
 
-$command = "sudo php create-po-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$command = "sudo php "._SUB_DIR."create-po-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 $tasks[] = $command;
 
-$command = "sudo php create-playermanager-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$command = "sudo php "._SUB_DIR."create-playermanager-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 $tasks[] = $command;
 
 
 for($i=1; $i<=$numberOfFront; $i++)
 {
-  $command = "sudo php ".CURRENT_DIR."/dohighstate.php ".escapeshellarg($appName)." front ".$i." ";
+  $command = "sudo php "._SUB_DIR."/dohighstate.php ".escapeshellarg($appName)." front ".$i." ";
   $tasks[] = $command;
 }
 for($i=1; $i<=$numberOfNode; $i++)
 {
-  $command = "sudo php ".CURRENT_DIR."/dohighstate.php ".escapeshellarg($appName)." node ".$i." ";
+  $command = "sudo php "._SUB_DIR."/dohighstate.php ".escapeshellarg($appName)." node ".$i." ";
   $tasks[] = $command;
 }
 

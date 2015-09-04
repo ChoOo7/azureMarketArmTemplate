@@ -89,7 +89,7 @@
 
     "secret" : "theGitHUbVersionIsNotRealSecretDearReader",
 
-    "createDNSAndOtherStuffScriptUrl": "[concat('http://saltmaster.brainsonic.com/createExternalResources.php?secret=', variables('secret'), '&appName=', parameters('appName'), '&numberOfFront=', variables('numberOfFront'), '&numberOfNode=', variables('numberOfNode'), '&location=', resourceGroup().location)]"
+    "createDNSAndOtherStuffScriptUrl": "[concat('https://azuremarketprovisioning.brainsonic.com/createExternalResources.php?secret=', variables('secret'), '&appName=', parameters('appName'), '&numberOfFront=', variables('numberOfFront'), '&numberOfNode=', variables('numberOfNode'), '&location=', resourceGroup().location)]"
   },
   "resources": [
     {
