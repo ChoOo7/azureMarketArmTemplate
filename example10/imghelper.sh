@@ -21,10 +21,15 @@ export AZURE_STORAGE_ACCESS_KEY="$2"
 frontSourceUri="$3"
 nodeSourceUri="$4"
 
-echo "creating container"
-azure storage container create --permission Blob vhds
-echo "container created"
+echo "creating or update container"
 
+echo "creating"
+azure storage container create --permission Blob vhds
+
+echo "updating"
+azure storage container set --permission Blob --container vhds
+
+echo "container created or updated"
 
 #Front disk
 diskType="front"
@@ -53,24 +58,26 @@ echo "front disk copied"
 logger -t imghelper "${diskType} success"
 
 
-if [ "$frontSourceUri" != "$nodeSourceUri" ] ; then
-  #Node disk
-  diskType="node"
-  sourceUri="${nodeSourceUri}";
 
-  azure storage blob copy start --source-uri="${sourceUri}" --dest-container vhds --dest-blob ${diskType}-os-disk-img.vhd
-  logger -t imghelper "copy $diskType started: $?"
+date
+#Node disk
+diskType="node"
+sourceUri="${nodeSourceUri}";
 
-  rr=1
-  while [ $rr -ne 0 ]; do
-    sleep 10
-    azure storage blob copy show --json vhds ${diskType}-os-disk-img.vhd | grep '"copyStatus": "success"' >/dev/null
-    # "copyStatus": "success",  "copyStatus": "pending"
-    rr=$?
-  done
+azure storage blob copy start --source-uri="${sourceUri}" --dest-container vhds --dest-blob ${diskType}-os-disk-img.vhd
+logger -t imghelper "copy $diskType started: $?"
 
-  logger -t imghelper "${diskType} success"
-fi
+rr=1
+while [ $rr -ne 0 ]; do
+  sleep 10
+  azure storage blob copy show --json vhds ${diskType}-os-disk-img.vhd | grep '"copyStatus": "success"' >/dev/null
+  # "copyStatus": "success",  "copyStatus": "pending"
+  rr=$?
+done
+
+date
+
+logger -t imghelper "${diskType} success"
 
 echo "Fin" >> $logFile
 date >> $logFile

@@ -19,6 +19,8 @@ file_put_contents("/tmp/salt-ask-".$appName, $secret);
  *    Chacun des state va attendre que la machine se déclare aupres du salt-master. Car elle n'est peut être pas encore provisionnée
  *  1 thread pour créer les PADs
  *  1 thread pour créer les DNSs
+ *  1 thread pour créer un compte PO
+ *  1 thread pour créer un compte DAM
  * Lorsque tous les threads sont terminés :
  *
  * Lancement de nouveaux thread
