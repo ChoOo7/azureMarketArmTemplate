@@ -16,27 +16,27 @@ file_put_contents("/tmp/salt-ask-".$appName, $secret);
 $tasks = array();
 
 
-$command = "php create-pad.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$command = "sudo php create-pad.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 $tasks[] = $command;
 
-$command = "php create-dns.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$command = "sudo php create-dns.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 $tasks[] = $command;
 
-$command = "php create-po-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$command = "sudo php create-po-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 $tasks[] = $command;
 
-$command = "php create-playermanager-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
+$command = "sudo php create-playermanager-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 $tasks[] = $command;
 
 
 for($i=1; $i<=$numberOfFront; $i++)
 {
-  $command = "php ".CURRENT_DIR."/dohighstate.php ".escapeshellarg($appName)." front ".$i." ";
+  $command = "sudo php ".CURRENT_DIR."/dohighstate.php ".escapeshellarg($appName)." front ".$i." ";
   $tasks[] = $command;
 }
 for($i=1; $i<=$numberOfNode; $i++)
 {
-  $command = "php ".CURRENT_DIR."/dohighstate.php ".escapeshellarg($appName)." node ".$i." ";
+  $command = "sudo php ".CURRENT_DIR."/dohighstate.php ".escapeshellarg($appName)." node ".$i." ";
   $tasks[] = $command;
 }
 
