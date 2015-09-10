@@ -5,31 +5,29 @@ ini_set('max_execution_time', 3600);
 $appName = $argv[1];
 
 define('CURRENT_DIR', realpath(dirname(__FILE__)));
-define('_SUB_DIR', CURRENT_DIR.'/dns/');
+require_once("../utils.php");
+
 
 $commands = array();
 
 
-$username = "cvc";
+$mysqlUser = "cvc";
+$mysqlDatabase = $mysqlUser;
 $mysqlPassword = substr(md5(uniqid()), 0, 10);
+//$mysqlHost = "10.0.0.7";
+$mysqlHost = "127.0.0.1";
 
 
-$command = 'CREATE DATABASE '.$username.'';
-$commands[] = $command;
-
-$command = "CREATE USER '".$username."'@'%' IDENTIFIED BY '".$mysqlPassword."'";
-$commands[] = $command;
-
-$command = "GRANT ALL PRIVILEGES ON ".$username.".* TO ".$username."@'%'";
-$commands[] = $command;
-
-$command = "FLUSH PRIVILEGES";
-$commands[] = $command;
-
-foreach($commands as $command)
-{
-  $execCommand = 'echo "'.$command.'" | mysql --defaults-file=/etc/mysql/debian.cnf --default-character-set=utf8"';
-  passthru($execCommand);
-}
 
 addPillarInformation($appName, "mysql_password", $mysqlPassword);
+addPillarInformation($appName, "mysql_user", $mysqlUser);
+addPillarInformation($appName, "mysql_database", $mysqlUser);
+addPillarInformation($appName, "mysql_host", $mysqlHost);
+
+
+$saltCommand = 'salt '.$appName.'-node1 state.sls eztv.deploydatabase';
+echo pake_echo($saltCommand);
+passthru($saltCommand);
+
+
+echo "\n";

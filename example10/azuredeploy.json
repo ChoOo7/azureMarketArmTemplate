@@ -718,7 +718,7 @@
         "settings": {
           "fileUris": [
             "[variables('postInstallScriptUrl')]",
-            "[variables('createDNSAndOtherStuffScriptUrl')]"
+            "[concat(variables('createDNSAndOtherStuffScriptUrl'), '&storageAccountName=', variables('storageAccountName'), '&storageAccountKey=', listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1)]"
           ],
           "commandToExecute": "[concat('bash do.sh ', parameters('appName'), ' front ', copyindex(1), variables('storageAccountName'), listKeys(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-05-01-preview').key1, '  ', variables('secret'), ' ', variables('numberOfFront'), ' ', variables('numberOfNode'), ' ', resourceGroup().location)]"
         }

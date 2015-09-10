@@ -110,8 +110,9 @@ function initPillarForApp($appName)
 {
   $filename = '/srv/pillar/'.$appName.'/init.sls';
   $topFilename = '/srv/pillar/top.sls';
-  if( ! file_get_contents($filename))
+  if( ! file_exists($filename))
   {
+    @mkdir('/srv/pillar/'.$appName.'/');
     file_put_contents($filename, 'eztvconfig:');
 
     file_put_contents($topFilename , "\n"."  '".$appName."-*':", FILE_APPEND);
@@ -123,6 +124,64 @@ function initPillarForApp($appName)
 function addPillarInformation($appName, $key, $value)
 {
   $filename = initPillarForApp($appName);
-  file_put_contents($filename, '   '.$key.': '.$value, FILE_APPEND);
+  $cnt = file_get_contents($filename);
+  if(strpos($cnt, $key.':') === false)
+  {
+    //insert
+    file_put_contents($filename, "\n" . '   ' . $key . ': ' . $value, FILE_APPEND);
+  }else{
+    //update
+    $newCnt = "";
+    foreach(explode("\n", $cnt) as $line)
+    {
+      if(strpos($line, $key.":") === false)
+      {
+        $newCnt.="\n".$line;
+      }else{
+        $newCnt.="\n".'   '.$key . ': ' . $value;
+      }
+    }
+    file_put_contents($filename, $newCnt);
+  }
+
+  pake_echo("refreshing pillar and grains");
+
+  $command = "salt '".$appName."-*' saltutil.refresh_pillar";
+  passthru($command);
+
+  $command = "salt '".$appName."-*' saltutil.sync_grains ";
+  passthru($command);
+
+
 }
 
+function getHostUptime($hostname)
+{
+  $command = 'timeout 10 salt -t 10 ' . $hostname . ' cmd.run "uptime -s"';
+  pake_echo($command);
+  $output = null;
+  exec($command, $output);
+
+  if(empty($output))
+  {
+    return null;
+  }
+  $lastLine = array_pop($output);
+
+  $since = strtotime($lastLine);
+  if($since == null)
+  {
+    return null;
+  }
+
+  return time() - $since;
+}
+
+function saltWayForHostReady($hostname)
+{
+  while(getHostUptime($hostname) == null)
+  {
+    sleep(5);
+  }
+  return true;
+}
