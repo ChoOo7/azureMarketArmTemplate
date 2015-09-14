@@ -26,6 +26,15 @@ $informations['storageAccountKey'] = $storageAccountKey;
 //Log some information in order to debug
 file_put_contents("/tmp/create_ext_ress", "\n\n".serialize($informations), FILE_APPEND);
 
+$portalUser = "admin-cmd";
+$portalPassword = substr(md5(uniqid()), 0, 10);
+
+$apiKey = substr(md5(uniqid()), 0, 20);
+
+addPillarInformation($appName, "portal_username", $portalUser);
+addPillarInformation($appName, "portal_password", $portalPassword);
+addPillarInformation($appName, "portal_apikey", $apiKey);
+
 addPillarInformation($appName, "number_of_front", $numberOfFront);
 addPillarInformation($appName, "number_of_node", $numberOfNode);
 
