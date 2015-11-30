@@ -12,6 +12,27 @@ function pake_echo($msg)
   echo "\n".$msg."";
 }
 
+<<<<<<< HEAD
+=======
+function getSshPort($hostType, $hostIndex)
+{
+  $sshPort = 11122;
+  switch($hostType)
+  {
+    case 'front';
+      $sshPort = 11122 + $hostIndex - 1;
+      break;
+    case 'node';
+      $sshPort = 11130 + $hostIndex - 1;
+      break;
+    case 'worker';
+      $sshPort = 11140 + $hostIndex - 1;
+      break;
+  }
+  return $sshPort;
+}
+
+>>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
 
 function doTasksOnMultithread($commands, $nbChilds)
 {
@@ -88,5 +109,87 @@ function doTasksOnMultithread($commands, $nbChilds)
     }
   }
 }
+<<<<<<< HEAD
 
 
+=======
+function initPillarForApp($appName)
+{
+  $filename = '/srv/pillar/'.$appName.'/init.sls';
+  $topFilename = '/srv/pillar/top.sls';
+  if( ! file_exists($filename))
+  {
+    @mkdir('/srv/pillar/'.$appName.'/');
+    file_put_contents($filename, 'eztvconfig:');
+
+    file_put_contents($topFilename , "\n"."  '".$appName."-*':", FILE_APPEND);
+    file_put_contents($topFilename , "\n"."    - ".$appName, FILE_APPEND);
+  }
+  return $filename;
+}
+
+function addPillarInformation($appName, $key, $value)
+{
+  $filename = initPillarForApp($appName);
+  $cnt = file_get_contents($filename);
+  if(strpos($cnt, $key.':') === false)
+  {
+    //insert
+    file_put_contents($filename, "\n" . '   ' . $key . ': ' . $value, FILE_APPEND);
+  }else{
+    //update
+    $newCnt = "";
+    foreach(explode("\n", $cnt) as $line)
+    {
+      if(strpos($line, $key.":") === false)
+      {
+        $newCnt.="\n".$line;
+      }else{
+        $newCnt.="\n".'   '.$key . ': ' . $value;
+      }
+    }
+    file_put_contents($filename, $newCnt);
+  }
+
+  pake_echo("refreshing pillar and grains");
+
+  $command = "salt '".$appName."-*' saltutil.refresh_pillar";
+  passthru($command);
+
+  $command = "salt '".$appName."-*' saltutil.sync_grains ";
+  passthru($command);
+
+
+}
+
+function getHostUptime($hostname)
+{
+  $command = 'timeout 10 salt -t 10 ' . $hostname . ' cmd.run "uptime -s"';
+  pake_echo($command);
+  $output = null;
+  exec($command, $output);
+
+  if(empty($output))
+  {
+    return null;
+  }
+  $lastLine = array_pop($output);
+
+  $since = strtotime($lastLine);
+  if($since == null)
+  {
+    return null;
+  }
+
+  return time() - $since;
+}
+
+function saltWayForHostReady($hostname)
+{
+  while(getHostUptime($hostname) == null)
+  {
+    sleep(5);
+  }
+  return true;
+}
+>>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
