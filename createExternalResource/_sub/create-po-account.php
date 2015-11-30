@@ -34,10 +34,8 @@ if (!$xml)
 $poCustomerId = (string)$xml->CustomerGuid;
 $poCustomerKey = (string)$xml->ApiKey;
 
-<<<<<<< HEAD
-//TODO Store this in order to user with deployment
 
-=======
+//TODO Store this in order to user with deployment
 
 $info = array(
   'po_customer_id'         => $poCustomerId,
@@ -48,7 +46,6 @@ pake_echo($appName.' : '.serialize($info));
 
 addPillarInformation($appName, "po_customer_id", $poCustomerId);
 addPillarInformation($appName, "po_customer_key", $poCustomerKey);
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
 
 echo "\nDONE\n";
 

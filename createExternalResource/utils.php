@@ -12,8 +12,6 @@ function pake_echo($msg)
   echo "\n".$msg."";
 }
 
-<<<<<<< HEAD
-=======
 function getSshPort($hostType, $hostIndex)
 {
   $sshPort = 11122;
@@ -31,8 +29,6 @@ function getSshPort($hostType, $hostIndex)
   }
   return $sshPort;
 }
-
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
 
 function doTasksOnMultithread($commands, $nbChilds)
 {
@@ -109,10 +105,7 @@ function doTasksOnMultithread($commands, $nbChilds)
     }
   }
 }
-<<<<<<< HEAD
 
-
-=======
 function initPillarForApp($appName)
 {
   $filename = '/srv/pillar/'.$appName.'/init.sls';
@@ -192,4 +185,4 @@ function saltWayForHostReady($hostname)
   }
   return true;
 }
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
+

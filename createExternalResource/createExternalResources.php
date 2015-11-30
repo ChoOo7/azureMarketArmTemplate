@@ -2,11 +2,10 @@
 
 require_once('./utils.php');
 
-<<<<<<< HEAD
-=======
+
 $numberOfThread = 1;
 
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
+
 $secret = $_GET['secret'];
 $appName = $_GET['appName'];
 $numberOfFront = (int)$_GET['numberOfFront'];
@@ -22,11 +21,9 @@ $informations['numberOfFront'] = $numberOfFront;
 $informations['numberOfNode'] = $numberOfNode;
 $informations['location'] = $location;
 
-<<<<<<< HEAD
-
 //Log some information in order to debug
 file_put_contents("/tmp/create_ext_ress", "\n\n".serialize($informations), FILE_APPEND);
-=======
+
 $informations['storageAccountName'] = $storageAccountName;
 $informations['storageAccountKey'] = $storageAccountKey;
 
@@ -48,7 +45,7 @@ addPillarInformation($appName, "number_of_node", $numberOfNode);
 
 addPillarInformation($appName, "storage_account_name", $storageAccountName);
 addPillarInformation($appName, "storage_account_key", $storageAccountKey);
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
+
 
 
 define('CURRENT_DIR', realpath(dirname(__FILE__)));
@@ -90,10 +87,6 @@ for($i=1; $i<=$numberOfNode; $i++)
 }
 
 
-<<<<<<< HEAD
-doTasksOnMultithread($tasks, 20);
-
-=======
 doTasksOnMultithread($tasks, $numberOfThread);
 
 
@@ -120,18 +113,17 @@ for($i=2; $i<=$numberOfNode; $i++)
   $tasks[] = $command;
 }
 doTasksOnMultithread($tasks, $numberOfThread);
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
+
 
 $command = "php create-dam-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 
-<<<<<<< HEAD
+
 
 //TODO : check if  PAD DNS is OK
 
 $command = "sudo php "._SUB_DIR."create-dns-step2.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 pake_echo($command);
 passthru($command);
-=======
 
 $command = "sudo php "._SUB_DIR."create-mysql-account.php ".escapeshellarg($appName)." ".$numberOfFront." ".$numberOfNode;
 pake_echo($command);
@@ -153,15 +145,7 @@ $command = "sudo php "._SUB_DIR."create-dns-step2.php ".escapeshellarg($appName)
 pake_echo($command);
 passthru($command);
 
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
-
 //TODO Prevent galera cluster not started
-
-<<<<<<< HEAD
-//TODO Prevent galera cluster not started
-
-=======
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
 
 //TODO : Mail the client about his VM
 echo "DONE";

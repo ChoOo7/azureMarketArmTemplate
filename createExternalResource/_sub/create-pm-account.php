@@ -7,7 +7,7 @@ $appName = $argv[1];
 define('CURRENT_DIR', realpath(dirname(__FILE__)));
 define('_SUB_DIR', CURRENT_DIR.'/dns/');
 
-<<<<<<< HEAD
+
 require_once('./create-po-config.php');
 
 $poAccountName = $appName .'-cvc';
@@ -39,7 +39,7 @@ $poCustomerKey = (string)$xml->ApiKey;
 
 
 echo "\nDONE\n";
-=======
+
 require_once('../utils.php');
 require_once('./pm/bsPlayerManagerApi.php');
 require_once('./create-po-config.php');
@@ -110,7 +110,5 @@ addPillarInformation($appName, "pm_user_uid", $tvPmUserUid);
 addPillarInformation($appName, "pm_user_secret", $tvPmUserSecret);
 
 pake_echo("DONE");
->>>>>>> 17e4c4a5bdbbccb0115d02fdb5bab8658b23716d
-
 
 
